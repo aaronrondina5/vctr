@@ -1,0 +1,24 @@
+{
+    "cppinit": {
+        "scope": "c++, cpp, c, h",
+        "prefix": "cppinit",
+        "body": [
+            "#include \"${TM_FILENAME_BASE}.h\"",
+            "",
+            "// vctr",
+            "",
+            "// std",
+            "",
+            "",
+            "namespace arondina",
+            "{",
+            "namespace vctr",
+            "{",
+            "",
+            "$1",
+            "",
+            "} // vctr",
+            "} // arondina"
+        ]
+    }
+}
