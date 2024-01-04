@@ -1,0 +1,26 @@
+{
+    "headerinit": {
+        "scope": "c++, cpp, c, h",
+        "prefix": "headerinit",
+        "body": [
+            "#ifndef INCLUDED_ARONDINA_VCTR_${TM_FILENAME_BASE/(.*)/${1:/upcase}/}",
+            "#define INCLUDED_ARONDINA_VCTR_${TM_FILENAME_BASE/(.*)/${1:/upcase}/}",
+            "",
+            "// vctr",
+            "",
+            "// std",
+            "",
+            "namespace arondina",
+            "{",
+            "namespace vctr",
+            "{",
+            "",
+            "$1",
+            "",
+            "} // vctr",
+            "} // arondina",
+            "",
+            "#endif"
+        ]
+    }
+}
