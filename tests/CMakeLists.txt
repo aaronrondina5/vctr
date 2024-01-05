@@ -16,7 +16,7 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 set(TEST_SOURCES
-  vctr.t.cpp
+  vector.t.cpp
 )
 
 add_executable(${PROJECT_NAME} ${TEST_SOURCES})
