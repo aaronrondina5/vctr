@@ -8,8 +8,6 @@
 #include <execution>
 #include <initializer_list>
 #include <memory>
-#include <numeric>
-#include <vector>
 
 namespace arondina
 {
@@ -39,7 +37,7 @@ public:
      * @brief Initialize with size.
      * ie Vector v(7);
     */
-    Vector(size_t dimensions)
+    Vector(long long dimensions)
         : m_dimensions(dimensions)
         , m_data(std::make_unique<T[]>(m_dimensions))
     {
