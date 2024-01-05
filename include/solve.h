@@ -1,10 +1,10 @@
-#ifndef INCLUDED_ARONDINA_VCTR_VCTR
-#define INCLUDED_ARONDINA_VCTR_VCTR
+#ifndef INCLUDED_ARONDINA_VCTR_SOLVE
+#define INCLUDED_ARONDINA_VCTR_SOLVE
 
 // vctr
+#include "vector.h"
 
 // std
-#include <vector>
 
 namespace arondina
 {
@@ -24,11 +24,15 @@ enum class LinearCombinationSolveAlgorithm
  * @param x The column vector result that contains the linear combinations of
  *          matrix a that result in matrix x.
 */
+
+/**
 void solve_combinations(
     const std::vector<std::vector<int>>& a
     , const std::vector<int>& b
     , std::vector<int>& x
     , LinearCombinationSolveAlgorithm algorithm = LinearCombinationSolveAlgorithm::LU_DECOMPOSITION);
+*/
+
 
 } // vctr
 } // arondina
