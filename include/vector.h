@@ -173,14 +173,30 @@ public:
         {
             throw std::runtime_error("cannot add 2 different sizes.");
         }
+
+        const int limit_size_for_parallelization = 1000;
+
         Vector<T> result(m_dimensions);
-        std::transform(
-            m_dimensions > 1000 ? std::execution::seq : std::execution::par
-            , this->begin()
-            , this->end()
-            , rhs.begin()
-            , result.begin(),
-            [](const T& a, const T& b) { return a + b; });
+
+        if(m_dimensions > limit_size_for_parallelization)
+        {
+            std::transform(
+                std::execution::par
+                , this->begin()
+                , this->end()
+                , rhs.begin()
+                , result.begin(),
+                [](const T& a, const T& b) { return a + b; });
+        }
+        else
+        {
+            // could potentially have just changed the execution policy to std::execution::seq
+            // but I almost think its nicer to fall back to visible for loop
+            for(int i = 0; i < m_dimensions; ++i)
+            {
+                result[i] = (*this)[i] + rhs[i];
+            }
+        }
 
         return result;
     }
@@ -198,14 +214,28 @@ public:
         {
             throw std::runtime_error("cannot add 2 different sizes.");
         }
+        const int limit_size_for_parallelization = 1000;
+
         Vector<T> result(m_dimensions);
-        std::transform(
-            m_dimensions > 1000 ? std::execution::seq : std::execution::par
-            , this->begin()
-            , this->end()
-            , rhs.begin()
-            , result.begin(),
-            [](const T& a, const T& b) { return a - b; });
+        
+        if(m_dimensions > limit_size_for_parallelization)
+        {
+            std::transform(
+                std::execution::par
+                , this->begin()
+                , this->end()
+                , rhs.begin()
+                , result.begin(),
+                [](const T& a, const T& b) { return a - b; });
+        }
+        else
+        {
+            // see comment inside operator+
+            for(int i = 0; i < m_dimensions; ++i)
+            {
+                result[i] = (*this)[i] - rhs[i];
+            }
+        }
 
         return result;
     }
@@ -223,19 +253,7 @@ private:
  * https://en.cppreference.com/w/cpp/algorithm/transform_reduce
 */
 template<typename T>
-T dot_product(const Vector<T>& lhs, const Vector<T>& rhs)
-{
-    if(lhs.m_dimensions() != rhs.dimensions())
-    {
-        throw std::runtime_error("cannot dot_product 2 different sizes.");
-    }
-    return std::transform_reduce(
-        m_dimensions > 1000 ? std::execution::seq : std::execution::par
-        , lhs.begin()
-        , lhs.end()
-        , rhs.begin()
-        , T());
-}
+T dot_product(const Vector<T>& lhs, const Vector<T>& rhs);
 
 /**
  * Determines if the vectors are perpendicular by computing 
@@ -243,10 +261,7 @@ T dot_product(const Vector<T>& lhs, const Vector<T>& rhs)
  * 
 */
 template<typename T>
-bool are_perpendicular(const Vector<T>& rhs, const Vector<T>& lhs)
-{
-    return dot_product(lhs, rhs) == 0;
-}
+bool are_perpendicular(const Vector<T>& rhs, const Vector<T>& lhs);
 
 } // vctr
 } // arondina

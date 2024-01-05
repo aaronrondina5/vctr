@@ -15,20 +15,19 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-set(TEST_SOURCES
-  vector.t.cpp
-)
+add_executable(vctrtests
 
-add_executable(${PROJECT_NAME} ${TEST_SOURCES})
+  vector.t.cpp
+
+)
 
 include(GoogleTest)
-gtest_discover_tests(${PROJECT_NAME})
+gtest_discover_tests(vctrtests)
 
-target_link_libraries(${PROJECT_NAME}
-    gtest_main
-    gtest
-    
-    vctr
+target_link_libraries(vctrtests
+  GTest::gtest_main
+
+  vctr
 )
 
-target_include_directories(${PROJECT_NAME} PUBLIC ../include/)
+target_include_directories(vctrtests PUBLIC ../include/)
