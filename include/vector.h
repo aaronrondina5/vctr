@@ -6,8 +6,10 @@
 // std
 #include <algorithm>
 #include <execution>
+#include <iostream>
 #include <initializer_list>
 #include <memory>
+#include <stdexcept>
 
 namespace arondina
 {
@@ -20,37 +22,143 @@ namespace vctr
 template <typename T>
 class Vector
 {
-
 public:
+    /**
+     * Iterator
+    */
+    class Iterator
+    {
+    public:
+        using difference_type = std::ptrdiff_t;
+
+        Iterator(T* ptr): m_ptr(ptr)
+        {
+        }
+
+        T& operator*() const
+        {
+            return *m_ptr;
+        }
+
+        Iterator& operator++()
+        {
+            m_ptr++;
+            return *this;
+        }
+
+        Iterator operator++(int)
+        {
+            Iterator temp = *this;
+            ++(*this);
+            return temp;
+        }
+
+        Iterator& operator--()
+        {
+            m_ptr--;
+            return *this;
+        }
+
+        /**
+         * Relational operators
+        */
+        bool operator<(const Iterator& rhs) const
+        {
+            return m_ptr < rhs.m_ptr;
+        }
+
+        bool operator<=(const Iterator& rhs) const
+        {
+            return m_ptr <= rhs.m_ptr;
+        }
+
+        bool operator>(const Iterator& rhs) const
+        {
+            return m_ptr > rhs.m_ptr;
+        }
+
+        bool operator>=(const Iterator& rhs) const
+        {
+            return m_ptr >= rhs.m_ptr;
+        }
+
+        bool operator==(const Iterator& rhs) const
+        {
+            return m_ptr == rhs.m_ptr;
+        }
+
+        bool operator!=(const Iterator& rhs) const
+        {
+            return m_ptr != rhs.m_ptr;
+        }
+
+        /**
+         * Random access iterators
+        */
+        Iterator operator+(difference_type n) const
+        {
+            return Iterator(m_ptr + n);
+        }
+
+        Iterator operator-(difference_type n) const
+        {
+            return Iterator(m_ptr - n);
+        }
+
+        Iterator& operator+=(difference_type n)
+        {
+            m_ptr += n;
+            return *this;
+        }
+
+        Iterator& operator-=(difference_type n)
+        {
+            m_ptr -= n;
+            return *this;
+        }
+
+        difference_type operator-(const Iterator& other) const
+        {
+            return m_ptr - other.m_ptr;
+        }
+
+    private:
+        T* m_ptr;
+    };
+
     /**
      * @brief Initialize with initializer list.
      * ie Vector v{1, 2, 3};
     */
     Vector(std::initializer_list<T> list)
         : m_dimensions(list.size())
-        , m_data(std::make_unique<T[]>(m_dimensions))
+        , m_data(new T[list.size()])
     {
-        std::copy(list.begin(), list.end(), m_data.get());
+        std::copy(list.begin(), list.end(), m_data);
     }
 
     /**
-     * @brief Initialize with size.
-     * ie Vector v(7);
+     * @brief Initialize with size & default value
+     * ie Vector<int> v(7, 0);
     */
-    Vector(long long dimensions)
+    Vector(size_t dimensions, T default_value)
         : m_dimensions(dimensions)
-        , m_data(std::make_unique<T[]>(m_dimensions))
+        , m_data(new T[dimensions])
     {
+        for (size_t i = 0; i < m_dimensions; ++i)
+        {
+            m_data[i] = default_value;
+        }
     }
 
     /**
      * @brief Copy constructor.
     */
     Vector(const Vector& rhs)
-        : m_dimensions(rhs.size())
-        , m_data(std::make_unique<T[]>(m_dimensions))
+        : m_dimensions(rhs.dimensions())
+        , m_data(new T[rhs.dimensions()])
     {
-        std::copy(rhs.m_data.get(), rhs.m_data.get() + m_dimensions, m_data.get());
+        std::copy(rhs.m_data, rhs.m_data + m_dimensions, m_data);
     }
 
     /**
@@ -93,7 +201,10 @@ public:
     /**
      * @brief delete the data from the heap
     */
-    ~Vector() = default;
+    ~Vector()
+    {
+        delete[] m_data;
+    }
 
     /**
      * return the dimensions
@@ -104,21 +215,14 @@ public:
     }
 
     // Iterator methods
-    T* begin() {
-        return m_data.get(); // Pointer to the first element
-    }
-    T* end() {
-        return m_data.get() + m_dimensions; // Pointer to one past the last element
+    Iterator begin()
+    {
+        return Iterator(&m_data[0]);
     }
 
-    /**
-     * @brief Const versions of iterator methods
-    */
-    const T* cbegin() const {
-        return m_data.get();
-    }
-    const T* cend() const {
-        return m_data.get() + m_dimensions;
+    Iterator end()
+    {
+        return Iterator(&m_data[m_dimensions]);
     }
 
     /**
@@ -126,7 +230,11 @@ public:
     */
     T& operator[](size_t index)
     {
-        return m_data.get()[index];
+        if(index > m_dimensions - 1)
+        {
+            throw std::runtime_error("index out of bounds.");
+        }
+        return m_data[index];
     }
 
     /**
@@ -171,7 +279,6 @@ public:
         {
             throw std::runtime_error("cannot add 2 different sizes.");
         }
-
         const int limit_size_for_parallelization = 1000;
 
         Vector<T> result(m_dimensions);
@@ -239,7 +346,8 @@ public:
     }
 
 private:
-    std::unique_ptr<T[]> m_data;
+    T* m_data;
+
     size_t m_dimensions;
 };
 
@@ -258,7 +366,6 @@ T dot_product(const Vector<T>& rhs, const Vector<T>& lhs)
         throw std::runtime_error("cannot dot_product 2 different sizes.");
     }
     const int limit_size_for_parallelization = 1000;
-
     if(lhs.dimensions() > limit_size_for_parallelization)
     {
         return std::transform_reduce(
