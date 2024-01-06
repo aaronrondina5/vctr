@@ -41,6 +41,53 @@ TEST(VectorTests, testDestroyVector)
     });
 }
 
+TEST(VectorTests, copyConstructor)
+{
+    Vector<int> v1{43,55,79};
+    Vector<int> v2(v1);
+    EXPECT_TRUE(v1 == v2);
+    EXPECT_FALSE(v1 != v2);
+}
+
+TEST(VectorTests, moveConstructor)
+{
+    Vector<int> v1{1,2,3,4};
+    Vector<int> v2(std::move(v1));
+
+    EXPECT_EQ(4, v2.dimensions());
+    EXPECT_EQ(0, v1.dimensions());
+}
+
+TEST(VectorTests, assignment)
+{
+    Vector<int> v1{1,2,3,4,5};
+    Vector<int> v2(7, -1);
+
+    v2 = v1;
+
+    EXPECT_EQ(5, v1.dimensions());
+    EXPECT_EQ(1, v1[0]);
+    EXPECT_EQ(5, v1[4]);
+    EXPECT_EQ(5, v2.dimensions());
+    EXPECT_EQ(1, v2[0]);
+    EXPECT_EQ(5, v2[4]);
+    EXPECT_TRUE(v1 == v2);
+}
+
+TEST(VectorTests, moveAssignment)
+{
+    Vector<int> v1{1,2,3,4,5};
+    Vector<int> v2(7, -1);
+
+    v2 = std::move(v1);
+
+    EXPECT_EQ(0, v1.dimensions());
+    EXPECT_EQ(5, v2.dimensions());
+    EXPECT_EQ(1, v2[0]);
+    EXPECT_EQ(5, v2[4]);
+    EXPECT_TRUE(v1 != v2);
+}
+
 TEST(VectorTests, largerInitListConstructor)
 {
     Vector<int> v{9, 3, 4, 1, 4};
@@ -65,7 +112,7 @@ TEST(VectorTests, largerInitListConstructor)
     , std::runtime_error);
 }
 
-TEST(VectorTests, addValues)
+TEST(VectorTests, setValuesAtIndices)
 {
     Vector<int> v_length_nine(9, -1);
 
@@ -82,6 +129,130 @@ TEST(VectorTests, addValues)
             EXPECT_EQ(-1, v_length_nine[i]);
         }
     }
+}
+
+TEST(VectorTests, addVectors)
+{
+    Vector<int> v1{7, 8, 9, 12};
+    Vector<int> v2{2, 3, 4, 14};
+
+    Vector<int> result = v1 + v2;
+    Vector<int> expected{9, 11, 13, 26};
+
+    EXPECT_TRUE(expected == result);
+}
+
+TEST(VectorTests, addEmptyVectors)
+{
+    Vector<int> v1{};
+    Vector<int> v2{};
+
+    Vector<int> result = v1 + v2;
+    Vector<int> expected{};
+
+    EXPECT_TRUE(expected == result);
+}
+
+TEST(VectorTests, addVectorsThrowsUnequalSizes)
+{
+    Vector<int> v1{7, 8, 9, 12};
+    Vector<int> v2{2, 3, 4, 14, 7};
+
+    EXPECT_THROW({
+        try
+        {
+            Vector<int> result = v1 + v2;
+        }
+        catch(const std::runtime_error& e)
+        {
+            EXPECT_STREQ("unequal vector sizes.", e.what());
+            throw;
+        }
+    }
+    , std::runtime_error);
+}
+
+TEST(VectorTests, subtractVectors)
+{
+    Vector<int> v1{7, 3, 9, 12};
+    Vector<int> v2{2, 8, 4, 17};
+
+    Vector<int> result = v1 - v2;
+    Vector<int> expected{5, -5, 5, -5};
+
+    EXPECT_TRUE(expected == result);
+}
+
+TEST(VectorTests, subtractEmptyVectors)
+{
+    Vector<int> v1{};
+    Vector<int> v2{};
+
+    Vector<int> result = v1 - v2;
+    Vector<int> expected{};
+
+    EXPECT_TRUE(expected == result);
+}
+
+TEST(VectorTests, subtractVectorsThrowsUnequalSizes)
+{
+    Vector<int> v1{7, 8, 9, 12};
+    Vector<int> v2{2, 3, 4, 14, 7};
+
+    EXPECT_THROW({
+        try
+        {
+            Vector<int> result = v1 - v2;
+        }
+        catch(const std::runtime_error& e)
+        {
+            EXPECT_STREQ("unequal vector sizes.", e.what());
+            throw;
+        }
+    }
+    , std::runtime_error);
+}
+
+TEST(VectorTests, compareVectors_SameElementsDifferentOrder)
+{
+    Vector<int> v1{1, 2, 3, 4};
+    Vector<int> v2{1, 3, 4, 2};
+    EXPECT_FALSE(v1 == v2);
+    EXPECT_TRUE(v1 != v2);
+}
+
+TEST(VectorTests, compareVectors_DifferentLengthsSameSubsequence)
+{
+    Vector<int> v1{1, 2, 3, 4};
+    Vector<int> v2{1, 2, 3};
+    EXPECT_FALSE(v1 == v2);
+    EXPECT_TRUE(v1 != v2);
+}
+
+TEST(VectorTests, compareVectors_DifferentElementsSameLength)
+{
+    Vector<int> v1{1, 7, 3, 4};
+    Vector<int> v2{8, 2, 9, 7};
+    EXPECT_FALSE(v1 == v2);
+    EXPECT_TRUE(v1 != v2);
+}
+
+TEST(VectorTests, compareVectors_Same)
+{
+    Vector<int> v1{1, 2, 3, 4};
+    Vector<int> v2{1, 2, 3, 4};
+    EXPECT_TRUE(v1 == v2);
+    EXPECT_FALSE(v1 != v2);
+}
+
+TEST(VectorTests, compareVectors_AdjustToSameVector)
+{
+    Vector<int> v1{1, 2, 3, 4};
+    Vector<int> v2{1, 2, 5, 4};
+    v2[2] = 3;
+
+    EXPECT_TRUE(v1 == v2);
+    EXPECT_FALSE(v1 != v2);
 }
 
 class VectorIteratorTest : public ::testing::Test
