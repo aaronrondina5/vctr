@@ -1,7 +1,6 @@
-# vctr/src
+# src
 
 add_library(vctr
-    matrix.cpp
     vector.cpp
 )
 
