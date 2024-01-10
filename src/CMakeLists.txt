@@ -1,4 +1,4 @@
-# vctr/src
+# src
 
 add_library(vctr
     vector.cpp
