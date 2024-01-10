@@ -3,6 +3,7 @@
 // vctr
 
 // std
+#include <cmath>
 #include <iostream>
 #include <stdexcept>
 
@@ -142,6 +143,17 @@ TEST(VectorTests, addVectors)
     EXPECT_TRUE(expected == result);
 }
 
+TEST(VectorTests, addVectorsParallel)
+{
+    Vector<int> v1(VectorConstants::minSizeParallelTransformArithmetic + 200, 3);
+    Vector<int> v2(VectorConstants::minSizeParallelTransformArithmetic + 200, 1);
+
+    Vector<int> result = v1 + v2;
+    Vector<int> expected(VectorConstants::minSizeParallelTransformArithmetic + 200, 4);
+
+    EXPECT_TRUE(expected == result);
+}
+
 TEST(VectorTests, addEmptyVectors)
 {
     Vector<int> v1{};
@@ -183,6 +195,17 @@ TEST(VectorTests, subtractVectors)
     EXPECT_TRUE(expected == result);
 }
 
+TEST(VectorTests, subtractVectorsParallel)
+{
+    Vector<int> v1(VectorConstants::minSizeParallelTransformArithmetic + 200, 3);
+    Vector<int> v2(VectorConstants::minSizeParallelTransformArithmetic + 200, 1);
+
+    Vector<int> result = v1 - v2;
+    Vector<int> expected(VectorConstants::minSizeParallelTransformArithmetic + 200, 2);
+
+    EXPECT_TRUE(expected == result);
+}
+
 TEST(VectorTests, subtractEmptyVectors)
 {
     Vector<int> v1{};
@@ -211,6 +234,94 @@ TEST(VectorTests, subtractVectorsThrowsUnequalSizes)
         }
     }
     , std::runtime_error);
+}
+
+TEST(VectorTests, dotProduct)
+{
+    Vector<int> v1{7, 3, 9, 12};
+    Vector<int> v2{2, 8, 4, 17};
+
+    int result = dot_product(v1, v2);
+
+    EXPECT_EQ(278, result);
+}
+
+TEST(VectorTests, dotProductParallel)
+{
+    Vector<int> v1(VectorConstants::minSizeParallelTransformArithmetic + 200, 3);
+    Vector<int> v2(VectorConstants::minSizeParallelTransformArithmetic + 200, 2);
+
+    int result = dot_product(v1, v2);
+    int expected = 3 * 2 *  (VectorConstants::minSizeParallelTransformArithmetic + 200);
+
+    EXPECT_EQ(expected, result);
+}
+
+TEST(VectorTests, dotProductUnequalVectors)
+{
+    Vector<int> v1{7, 8, 9, 12};
+    Vector<int> v2{2, 3, 4, 14, 7};
+
+    EXPECT_THROW({
+        try
+        {
+            int result = dot_product(v1, v2);
+        }
+        catch(const std::runtime_error& e)
+        {
+            EXPECT_STREQ("unequal vector sizes.", e.what());
+            throw;
+        }
+    }
+    , std::runtime_error);
+}
+
+TEST(VectorTests, dotProductEmptyVectors)
+{
+    Vector<int> v1{};
+    Vector<int> v2{};
+
+    EXPECT_THROW({
+        try
+        {
+            int result = dot_product(v1, v2);
+        }
+        catch(const std::runtime_error& e)
+        {
+            EXPECT_STREQ("cannot dot product null vectors.", e.what());
+            throw;
+        }
+    }
+    , std::runtime_error);
+}
+
+TEST(VectorTests, magnitudeTwoDimensions)
+{
+    Vector<int> v1{3, 4};
+    Vector<int> v2{6, 8};
+    EXPECT_EQ(5, v1.magnitude());
+    EXPECT_EQ(10, v2.magnitude());
+}
+
+TEST(VectorTests, magnitudeThreeDimensions)
+{
+    Vector<int> v1{1, 2, 2};
+    Vector<int> v2{2, 3, 6};
+    EXPECT_EQ(3, v1.magnitude());
+    EXPECT_EQ(7, v2.magnitude());
+}
+
+TEST(VectorTests, magnitudeRandom)
+{
+    Vector<int> v1{2, 19, 38, 12, 17, 4};
+    double fuzzy_delta = std::abs(47.518 - v1.magnitude());
+    EXPECT_TRUE(fuzzy_delta < .001);
+}
+
+TEST(VectorTests, magnitudeParallel)
+{
+    Vector<int> v1(6400, 1);
+    EXPECT_EQ(80, v1.magnitude());
 }
 
 TEST(VectorTests, compareVectors_SameElementsDifferentOrder)

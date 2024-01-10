@@ -17,9 +17,15 @@ namespace arondina
 namespace vctr
 {
 
+struct VectorConstants
+{
+    static const size_t maxDimensionsForSequentialArithmeticOps;
+    static const size_t maxDimensionsForSequentialDotProduct; 
+};
+
 /**
  * @brief A class representing a mathematical vector of elements
- * T must support +, -, *, and /.
+ *        T must support +, -, *, and /.
 */
 template <typename T>
 class Vector
@@ -31,11 +37,14 @@ public:
     class Iterator
     {
     public:
+        using iterator_category = std::random_access_iterator_tag;
+        using value_type = T;
         using difference_type = std::ptrdiff_t;
+        using pointer = T*;
+        using reference = T&;
 
         /**
          * @brief Constructor for creating an Iterator instance.
-         * @param ptr A pointer to an element of type T, indicating the starting point of the iterator.
          */
         Iterator(T* ptr): m_ptr(ptr)
         {
@@ -43,16 +52,14 @@ public:
 
         /**
          * @brief Dereferences the iterator to access the value it points to.
-         * @return A reference to the value of type T pointed to by the iterator.
          */
-        T& operator*() const
+        reference operator*() const
         {
             return *m_ptr;
         }
 
         /**
          * @brief Prefix increment operator. Advances the iterator to the next element.
-         * @return A reference to the iterator after it has been advanced.
          */
         Iterator& operator++()
         {
@@ -62,7 +69,6 @@ public:
 
         /**
          * @brief Postfix increment operator. Advances the iterator to the next element.
-         * @return A copy of the iterator before it was advanced.
          */
         Iterator operator++(int)
         {
@@ -73,7 +79,6 @@ public:
 
         /**
          * @brief Prefix decrement operator. Moves the iterator to the previous element.
-         * @return A reference to the iterator after it has been moved back.
          */
         Iterator& operator--()
         {
@@ -83,8 +88,6 @@ public:
 
         /**
          * @brief Relational operators for comparing iterator positions.
-         * @param rhs The right-hand side iterator for comparison.
-         * @return Boolean result of the comparison operation.
          */
         bool operator<(const Iterator& rhs) const { return m_ptr < rhs.m_ptr; }
         bool operator<=(const Iterator& rhs) const { return m_ptr <= rhs.m_ptr; }
@@ -95,8 +98,6 @@ public:
 
         /**
          * @brief Random access operators to support jumping forward or backward by n positions.
-         * @param n The number of positions to move the iterator.
-         * @return An iterator positioned n elements away from the current one.
          */
         Iterator operator+(difference_type n) const { return Iterator(m_ptr + n); }
         Iterator operator-(difference_type n) const { return Iterator(m_ptr - n); }
@@ -105,8 +106,6 @@ public:
 
         /**
          * @brief Subtraction operator to calculate the distance between two iterators.
-         * @param other Another iterator of the same type.
-         * @return The number of elements between the current iterator and the 'other' iterator.
          */
         difference_type operator-(const Iterator& other) const
         {
@@ -114,13 +113,12 @@ public:
         }
 
     private:
-        T* m_ptr; ///< Pointer to the current element in the iteration.
+        T* m_ptr;
     };
 
     /**
      * @brief Constructor that initializes the Vector with an initializer list.
      *        This allows for direct list initialization of the Vector, like Vector v{1, 2, 3}.
-     * @param list An initializer list containing elements of type T to initialize the Vector.
      */
     Vector(std::initializer_list<T> list)
         : m_dimensions(list.size())
@@ -132,8 +130,6 @@ public:
     /**
      * @brief Constructor that initializes the Vector with a specific size and a default value for all elements.
      *        For example, Vector<int> v(7, 0) creates a Vector of size 7 with all elements initialized to 0.
-     * @param dimensions The size of the Vector.
-     * @param default_value The default value to initialize each element of the Vector.
      */
     Vector(size_t dimensions, T default_value)
         : m_dimensions(dimensions)
@@ -148,7 +144,6 @@ public:
     /**
      * @brief Constructor that initializes the Vector with a specific size. 
      *        Elements are default-constructed and may contain garbage values.
-     * @param dimensions The size of the Vector.
      */
     Vector(size_t dimensions)
         : m_dimensions(dimensions)
@@ -159,7 +154,6 @@ public:
     /**
      * @brief Copy constructor that creates a new Vector as a copy of an existing Vector.
      *        This constructor is used when a new Vector is directly initialized with another Vector.
-     * @param rhs The Vector to be copied.
      */
     Vector(const Vector<T>& rhs)
         : m_dimensions(rhs.dimensions())
@@ -172,7 +166,6 @@ public:
      * @brief Move constructor that transfers the ownership of the internal data from another Vector to this Vector.
      *        This constructor is used to optimize performance when a temporary Vector is moved into a new Vector.
      *        After the move, the original Vector is left in a valid but unspecified state.
-     * @param rhs The Vector from which the data is moved.
      */
     Vector(Vector<T>&& rhs) noexcept
         : m_dimensions(rhs.m_dimensions)
@@ -185,24 +178,19 @@ public:
     /**
      * @brief Assignment operator to copy the contents from another Vector.
      *        If the current Vector already contains data, it is first deleted before copying.
-     * @param rhs The Vector from which to copy.
-     * @return A reference to the current Vector after copying.
      */
     Vector<T>& operator=(const Vector<T>& rhs)
     {
         if(this != &rhs)
         {
-            // Delete the existing resources
             delete[] m_data;
 
-            // copy dimensions
             m_dimensions = rhs.m_dimensions;
 
-            // re-allocate memory & copy data
             m_data = new T[m_dimensions];
-            for (int i = 0; i < m_dimensions; ++i)
+            for (size_t dimension = 0; dimension < m_dimensions; ++dimension)
             {
-                m_data[i] = rhs.m_data[i];
+                m_data[dimension] = rhs.m_data[dimension];
             }
         }
         return *this;
@@ -211,19 +199,15 @@ public:
     /**
      * @brief Move assignment operator to transfer the contents from another Vector.
      *        The other Vector is left in a valid but unspecified state.
-     * @param rhs The Vector from which to move data.
-     * @return A reference to the current Vector after the move.
      */
     Vector<T>& operator=(Vector<T>&& rhs) noexcept
     {
         if(this != &rhs)
         {
-            // delete current data
             delete[] m_data;
 
-            // move the data from the other vector
             m_dimensions = rhs.m_dimensions;
-            m_data = rhs.m_data; // this will make a pointer to the old data
+            m_data = rhs.m_data;
 
             rhs.m_dimensions = 0;
             rhs.m_data = nullptr;
@@ -241,7 +225,6 @@ public:
 
    /**
      * @brief Returns the number of elements in the Vector.
-     * @return The size of the Vector.
      */
     size_t dimensions() const
     {
@@ -250,14 +233,12 @@ public:
 
     /**
      * @brief Calculates the geometric length (magnitude) of the Vector.
-     * @return The geometric length of the Vector.
      */
     double magnitude() const
     {
         T sum_squares = 0;
 
-        const int limit_size_for_parallelization = 1000;
-        if(m_dimensions > limit_size_for_parallelization)
+        if(m_dimensions > VectorConstants::minSizeParallelTransformArithmetic)
         {
             sum_squares = std::transform_reduce(
                 std::execution::par
@@ -281,8 +262,30 @@ public:
     }
 
     /**
+     * @brief scale this vector.
+    */
+    void scale(double scalar)
+    {
+        if (m_dimensions > VectorConstants::minSizeParallelTransformArithmetic)
+        {
+            std::transform(
+                std::execution::par,
+                m_data,
+                m_data + m_dimensions,
+                m_data,
+                [scalar](const T& a) { return scalar * a; });
+        }
+        else
+        {
+            for (int i = 0; i < m_dimensions; ++i)
+            {
+                m_data[i] *= scalar;
+            }
+        }
+    }
+
+    /**
      * @brief Provides an iterator to the beginning of the Vector.
-     * @return An iterator pointing to the first element in the Vector.
      */
     Iterator begin()
     {
@@ -291,7 +294,6 @@ public:
 
     /**
      * @brief Provides an iterator to the end of the Vector.
-     * @return An iterator pointing to one past the last element in the Vector.
      */
     Iterator end()
     {
@@ -300,7 +302,6 @@ public:
 
     /**
      * @brief Non-const access. If outside dimensions, throws a std::runtime_error.
-     * @return A non-const reference to the element T at index.
     */
     T& operator[](size_t index)
     {
@@ -313,7 +314,6 @@ public:
 
     /**
      * @brief Const access. If outside dimensions, throws a std::runtime_error.
-     * @return A const reference to the value T at the index.
     */
     const T& operator[](size_t index) const
     {
@@ -325,8 +325,7 @@ public:
     }
 
     /**
-     * @brief equality check.
-     * @param A const reference to another vector
+     * @brief equality check to another Vector references.
     */
     bool operator==(const Vector<T>& rhs)
     {
@@ -354,10 +353,10 @@ public:
 
     /**
      * @brief Adds another vector.
-     * Uses parallelization if large enough.
+     *        Uses parallelization if large enough.
      * 
-     * see std::transform 
-     * https://en.cppreference.com/w/cpp/algorithm/transform
+     *        see std::transform 
+     *        https://en.cppreference.com/w/cpp/algorithm/transform
     */
     Vector<T> operator+(const Vector<T>& rhs)
     {
@@ -370,10 +369,8 @@ public:
             return Vector<T>(m_dimensions);
         }
 
-        const int limit_size_for_parallelization = 1000;
         Vector<T> result(m_dimensions);
-
-        if (m_dimensions > limit_size_for_parallelization) {
+        if (m_dimensions > VectorConstants::minSizeParallelTransformArithmetic) {
             std::transform(
                 std::execution::par
                 , m_data
@@ -396,11 +393,9 @@ public:
     /**
      * @brief Subtracts another vector.
               Uses parallelization if large enough.
-     * @param rhs The Vector to subtract.
-     * @return a copy of a new vector
      * 
-     * see std::transform 
-     * https://en.cppreference.com/w/cpp/algorithm/transform
+     *        see std::transform 
+     *        https://en.cppreference.com/w/cpp/algorithm/transform
     */
     Vector<T> operator-(const Vector<T>& rhs)
     {
@@ -413,10 +408,8 @@ public:
             return Vector<T>(m_dimensions);
         }
 
-        const int limit_size_for_parallelization = 1000;
         Vector<T> result(m_dimensions);
-
-        if (m_dimensions > limit_size_for_parallelization) {
+        if (m_dimensions > VectorConstants::minSizeParallelTransformArithmetic) {
             std::transform(
                 std::execution::par
                 , m_data
@@ -437,26 +430,30 @@ public:
     }
 
 private:
-    T* m_data; ///<Pointer to the array data
-    size_t m_dimensions; ///<size of the array of data
+    T* m_data;
+    size_t m_dimensions;
 };
 
 /**
  * @brief Computes the dot product of 2 vectors by utilizing
- * Uses parallelization if large enough data.
+ *        Uses parallelization if large enough data.
  * 
- * see transform_reduce
- * https://en.cppreference.com/w/cpp/algorithm/transform_reduce
+ *        see transform_reduce
+ *        https://en.cppreference.com/w/cpp/algorithm/transform_reduce
 */
 template<typename T>
-T dot_product(const Vector<T>& rhs, const Vector<T>& lhs)
+T dot_product(Vector<T>& rhs, Vector<T>& lhs)
 {
     if(lhs.dimensions() != rhs.dimensions())
     {
-        throw std::runtime_error("cannot dot_product 2 different sizes.");
+        throw std::runtime_error("unequal vector sizes.");
     }
-    const int limit_size_for_parallelization = 1000;
-    if(lhs.dimensions() > limit_size_for_parallelization)
+    if(lhs.dimensions() == 0)
+    {
+        throw std::runtime_error("cannot dot product null vectors.");
+    }
+
+    if(lhs.dimensions() > VectorConstants::minSizeParallelDotProduct)
     {
         return std::transform_reduce(
             std::execution::par
@@ -480,13 +477,33 @@ T dot_product(const Vector<T>& rhs, const Vector<T>& lhs)
 
 /**
  * @brief Determines if the vectors are perpendicular by computing 
- * the dot product in a parallel manner and checking if equals 0.
+ *        the dot product in a parallel manner and checking if equals 0.
  * 
 */
 template<typename T>
 bool are_perpendicular(const Vector<T>& rhs, const Vector<T>& lhs)
 {
     return dot_product(lhs, rhs) == 0;
+}
+
+/**
+ * @brief Generate the unit vector for this vector.
+ *        The unit vector is determined by dividing each vector
+ *        component by the magnitude of the vector. This is because
+ *        if you scale individual components, your length will scale
+ *        in the same proportion.
+ * 
+ *        magnitude = sqrt( x^2 + y^2 )
+ *        apply a constant to each dimension
+ *        sqrt( (Cx)^2 + (Cy)^2 ) = sqrt(C^2 * ( x^2 + y^2 )) = C * sqrt( x^2 + y^2 ) = C * magnitude.
+*/
+template<typename T>
+Vector<T> unit_vector(const Vector<int>& vec)
+{
+    Vector<T> copy(vec);
+    double scale = 1.0 / vec.magnitude();
+    copy.scale(scale);
+    return copy;
 }
 
 } // vctr
