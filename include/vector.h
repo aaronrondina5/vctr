@@ -238,7 +238,7 @@ public:
     {
         T sum_squares = 0;
 
-        if(m_dimensions > VectorConstants::minSizeParallelTransformArithmetic)
+        if(m_dimensions > VectorConstants::maxDimensionsForSequentialArithmeticOps)
         {
             sum_squares = std::transform_reduce(
                 std::execution::par
@@ -266,7 +266,7 @@ public:
     */
     void scale(double scalar)
     {
-        if (m_dimensions > VectorConstants::minSizeParallelTransformArithmetic)
+        if (m_dimensions > VectorConstants::maxDimensionsForSequentialArithmeticOps)
         {
             std::transform(
                 std::execution::par,
@@ -370,7 +370,7 @@ public:
         }
 
         Vector<T> result(m_dimensions);
-        if (m_dimensions > VectorConstants::minSizeParallelTransformArithmetic) {
+        if (m_dimensions > VectorConstants::maxDimensionsForSequentialArithmeticOps) {
             std::transform(
                 std::execution::par
                 , m_data
@@ -409,7 +409,7 @@ public:
         }
 
         Vector<T> result(m_dimensions);
-        if (m_dimensions > VectorConstants::minSizeParallelTransformArithmetic) {
+        if (m_dimensions > VectorConstants::maxDimensionsForSequentialArithmeticOps) {
             std::transform(
                 std::execution::par
                 , m_data
@@ -453,7 +453,7 @@ T dot_product(Vector<T>& rhs, Vector<T>& lhs)
         throw std::runtime_error("cannot dot product null vectors.");
     }
 
-    if(lhs.dimensions() > VectorConstants::minSizeParallelDotProduct)
+    if(lhs.dimensions() > VectorConstants::maxDimensionsForSequentialDotProduct)
     {
         return std::transform_reduce(
             std::execution::par

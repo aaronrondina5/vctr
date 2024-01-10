@@ -145,11 +145,11 @@ TEST(VectorTests, addVectors)
 
 TEST(VectorTests, addVectorsParallel)
 {
-    Vector<int> v1(VectorConstants::minSizeParallelTransformArithmetic + 200, 3);
-    Vector<int> v2(VectorConstants::minSizeParallelTransformArithmetic + 200, 1);
+    Vector<int> v1(VectorConstants::maxDimensionsForSequentialArithmeticOps + 200, 3);
+    Vector<int> v2(VectorConstants::maxDimensionsForSequentialArithmeticOps + 200, 1);
 
     Vector<int> result = v1 + v2;
-    Vector<int> expected(VectorConstants::minSizeParallelTransformArithmetic + 200, 4);
+    Vector<int> expected(VectorConstants::maxDimensionsForSequentialArithmeticOps + 200, 4);
 
     EXPECT_TRUE(expected == result);
 }
@@ -197,11 +197,11 @@ TEST(VectorTests, subtractVectors)
 
 TEST(VectorTests, subtractVectorsParallel)
 {
-    Vector<int> v1(VectorConstants::minSizeParallelTransformArithmetic + 200, 3);
-    Vector<int> v2(VectorConstants::minSizeParallelTransformArithmetic + 200, 1);
+    Vector<int> v1(VectorConstants::maxDimensionsForSequentialArithmeticOps + 200, 3);
+    Vector<int> v2(VectorConstants::maxDimensionsForSequentialArithmeticOps + 200, 1);
 
     Vector<int> result = v1 - v2;
-    Vector<int> expected(VectorConstants::minSizeParallelTransformArithmetic + 200, 2);
+    Vector<int> expected(VectorConstants::maxDimensionsForSequentialArithmeticOps + 200, 2);
 
     EXPECT_TRUE(expected == result);
 }
@@ -248,11 +248,11 @@ TEST(VectorTests, dotProduct)
 
 TEST(VectorTests, dotProductParallel)
 {
-    Vector<int> v1(VectorConstants::minSizeParallelTransformArithmetic + 200, 3);
-    Vector<int> v2(VectorConstants::minSizeParallelTransformArithmetic + 200, 2);
+    Vector<int> v1(VectorConstants::maxDimensionsForSequentialDotProduct + 200, 3);
+    Vector<int> v2(VectorConstants::maxDimensionsForSequentialDotProduct + 200, 2);
 
     int result = dot_product(v1, v2);
-    int expected = 3 * 2 *  (VectorConstants::minSizeParallelTransformArithmetic + 200);
+    int expected = 3 * 2 *  (VectorConstants::maxDimensionsForSequentialDotProduct + 200);
 
     EXPECT_EQ(expected, result);
 }
